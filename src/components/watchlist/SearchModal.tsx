@@ -21,10 +21,10 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
   const [pending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    clearTimeout(timer.current);
+    if (timer.current) clearTimeout(timer.current);
     if (!query.trim() || query.length < 2) { 
       setResults([]); 
       setIsLoading(false);
@@ -44,7 +44,9 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
         setIsLoading(false);
       }
     }, 400);
-    return () => clearTimeout(timer.current);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, [query]);
 
   const handleSelect = async (item: any) => {
