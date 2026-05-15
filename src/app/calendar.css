@@ -1,0 +1,297 @@
+/* Notion-like Calendar UI Overrides */
+
+/* --- General Variables --- */
+.fc {
+  --fc-border-color: transparent;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: transparent;
+  
+  --transition-fluid: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Month/Year Header Typography --- */
+.fc .fc-toolbar-title {
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  letter-spacing: 0.02em;
+}
+
+/* --- Navigation Bar (Pill wrapper) --- */
+.fc-toolbar-chunk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fc-toolbar-chunk:first-child,
+.fc-toolbar-chunk:last-child {
+  background: var(--muted);
+  border-radius: 14px;
+  padding: 4px;
+}
+
+/* Active/Inactive view buttons */
+.fc .fc-button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--muted-foreground) !important;
+  font-weight: 500 !important;
+  border-radius: 10px !important;
+  transition: var(--transition-fluid) !important;
+  box-shadow: none !important;
+  padding: 6px 12px !important;
+  text-transform: capitalize !important;
+}
+
+.fc .fc-button:hover {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent) !important;
+  color: var(--foreground) !important;
+}
+
+.fc .fc-button-active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+}
+
+.dark .fc .fc-button-active,
+.dark .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: #334155 !important; /* slate-700 */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25) !important;
+}
+
+/* Override Bootstrap-like fc-button-primary defaults */
+.fc .fc-button-primary {
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+.fc .fc-button-primary:focus {
+  box-shadow: none !important;
+}
+
+/* Prev/Next Arrows */
+.fc .fc-prev-button, .fc .fc-next-button {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+.fc .fc-prev-button:hover, .fc .fc-next-button:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.fc .fc-today-button {
+  margin-left: 8px !important;
+  animation: pulse-ring 2s 1;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+}
+
+/* --- Calendar Grid (Month View) --- */
+.fc-theme-standard th {
+  border: none !important;
+  padding: 8px 0 !important;
+}
+.fc-theme-standard td, .fc-theme-standard .fc-scrollgrid {
+  border: none !important;
+}
+
+/* Day cells spacing & borders */
+.fc .fc-daygrid-day-frame {
+  min-height: 100px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0; /* slate-200 */
+  margin: 4px;
+  transition: var(--transition-fluid);
+  background: transparent;
+}
+
+.dark .fc .fc-daygrid-day-frame {
+  border-color: #334155; /* slate-700 */
+}
+
+/* Day labels (Mon, Tue) */
+.fc-col-header-cell-cushion {
+  font-weight: 500 !important;
+  color: #64748b !important; /* slate-500 */
+  font-size: 14px;
+}
+.dark .fc-col-header-cell-cushion {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+/* Date numbers */
+.fc-daygrid-day-number {
+  font-weight: 500 !important;
+  color: #1e293b !important; /* slate-800 */
+  text-decoration: none !important;
+  padding: 4px !important;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-left: auto;
+  transition: var(--transition-fluid);
+}
+.dark .fc-daygrid-day-number {
+  color: #f1f5f9 !important; /* slate-100 */
+}
+
+/* Other-month date numbers */
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+.dark .fc .fc-day-other .fc-daygrid-day-number {
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Hover cell */
+.fc .fc-daygrid-day-frame:hover {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+/* Today's cell */
+.fc .fc-day-today .fc-daygrid-day-frame {
+  background: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--primary);
+  color: var(--primary-foreground) !important;
+  font-weight: 700 !important;
+}
+
+/* Other month dates */
+.fc .fc-day-other .fc-daygrid-day-frame {
+  opacity: 0.35;
+}
+
+/* --- Event Pills (Month View) --- */
+.fc-daygrid-event {
+  border-radius: 8px !important;
+  padding: 2px 6px 2px 8px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  border-left: 3px solid transparent !important;
+  margin-top: 3px !important;
+  height: 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.15s ease !important;
+  overflow: hidden !important;
+}
+
+/* Pull the border-left color from the event's background color */
+.fc-daygrid-event .fc-event-main {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.fc-event-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-daygrid-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.14) !important;
+  z-index: 5;
+}
+
+.fc-daygrid-event:active {
+  transform: scale(0.97);
+}
+
+/* "More events" indicator */
+.fc-daygrid-more-link {
+  font-size: 11px !important;
+  color: var(--muted-foreground) !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+  padding: 2px 4px !important;
+  border-radius: 6px !important;
+}
+.fc-daygrid-more-link:hover {
+  background: var(--muted) !important;
+  text-decoration: none !important;
+}
+
+/* --- Week / Day View Time Grid --- */
+.fc-timegrid-slot-lane {
+  border-color: var(--border) !important;
+}
+.fc-timegrid-slot-lane:nth-child(even) {
+  background: color-mix(in srgb, var(--muted) 30%, transparent) !important;
+}
+
+.fc-timegrid-event {
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
+  border: none !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.15s ease;
+}
+
+.fc-timegrid-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.fc-v-event .fc-event-title {
+  font-weight: 500;
+}
+.fc-v-event .fc-event-time {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Current time indicator */
+.fc-timegrid-now-indicator-line {
+  border-color: var(--primary) !important;
+  border-width: 2px !important;
+  animation: pulse-opacity 2s infinite;
+}
+
+.fc-timegrid-now-indicator-arrow {
+  border: none !important;
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  margin-top: -4px;
+  margin-left: -4px;
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Fade transition for month change */
+.fc-view-harness {
+  animation: fadeSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeSlide {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
