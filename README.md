@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Life OS
 
-## Getting Started
+## Overview
 
-First, run the development server:
+Life OS is a comprehensive, full-stack personal productivity dashboard engineered to centralize and streamline daily life management. Moving beyond isolated apps, Life OS brings your tasks, habits, nutrition, entertainment, and finances into a single, cohesive interface. Built entirely from scratch with a focus on premium aesthetics and real-time responsiveness, it offers a dynamic bento-grid experience that feels alive and highly interactive.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*Built by Anant Shrey*
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Dashboard** — A highly visual, asymmetric bento-grid layout providing live infographics and glanceable insights across all active modules.
+- **To-Do List** — Robust task management supporting subtasks, intelligent priority sorting, customizable tags, and due dates.
+- **Habit Tracker** — Flexible habit tracking supporting daily, weekly, and monthly frequencies alongside robust streak calculations and visual heatmaps.
+- **Books Tracker** — Integrated with the Google Books API to manage reading progress, track current books, and visualize your digital library.
+- **Nutrition Tracker** — A comprehensive dietary module featuring meal logging and macro tracking, powered by the Open Food Facts API.
+- **Watchlist** — Connected to the TMDB API to search, discover, and organize your movies and TV shows with custom status tracking (Want, Watching, Watched).
+- **Expense Tracker** — A streamlined financial hub for budget management, tracking recurring expenses, and visualizing spending habits over time.
+- **Google Calendar** — Seamless two-way synchronization enabling you to view and create Google Calendar events directly within the dashboard.
+- **Settings** — Deeply customizable preferences covering currency localization, appearance, and account management.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 Tech Stack
 
-## Learn More
+| Category | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 14, TypeScript, Tailwind CSS |
+| **Backend** | Supabase (PostgreSQL), Row Level Security |
+| **Auth** | Supabase Auth (email/password) |
+| **APIs** | Google Books, TMDB, Open Food Facts, Google Calendar |
+| **Hosting** | Vercel |
+| **Charts** | Recharts |
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To run Life OS locally on your machine, follow these steps:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/AnantShrey/life-os.git
+   cd life-os
+   ```
 
-## Deploy on Vercel
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Configure environment variables**
+   Copy the `.env.example` file to `.env.local` and fill in your API keys:
+   ```bash
+   cp .env.example .env.local
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   *The app will be available at http://localhost:3000.*
+
+## 🔐 Environment Variables
+
+The application requires the following environment variables. Please refer to `.env.example` for the setup structure:
+
+- `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Your Supabase project anonymous API key.
+- `NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY` — API key for fetching book covers and metadata.
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — Google OAuth 2.0 Client ID for Calendar integration.
+- `GOOGLE_CLIENT_SECRET` — Google OAuth 2.0 Client Secret for Calendar integration.
+- `NEXT_PUBLIC_GOOGLE_CALENDAR_API_KEY` — API key for accessing Google Calendar data.
+- `NEXT_PUBLIC_TMDB_API_KEY` — API key for querying movies and TV shows from The Movie Database.
+- `NEXT_PUBLIC_APP_URL` — The absolute URL of your application (e.g., `http://localhost:3000`).
+
+## 🌐 Live Demo
+
+[Live Demo](https://anantshrey.vercel.app/)
+
+## 📸 Screenshots
+
+*Screenshots coming soon*
+
+## 📄 License
+
+MIT License
