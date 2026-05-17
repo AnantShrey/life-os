@@ -4,6 +4,7 @@ import { X, Search, Star, Plus } from "lucide-react";
 import Image from "next/image";
 import { searchTMDB, getTMDBDetails, mapTMDBResult, TMDB_THUMB_BASE, TMDB_IMAGE_BASE } from "@/lib/tmdb";
 import { addToWatchlist } from "@/app/watchlist/actions";
+import { useRouter } from "next/navigation";
 
 type Status = "want" | "watching" | "watched";
 
@@ -21,6 +22,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
   const [pending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
+  const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -58,14 +60,30 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
     if (!selected) return;
     const mapped = mapTMDBResult(selected);
     startTransition(async () => {
-      await addToWatchlist({
-        ...mapped,
+      const res = await addToWatchlist({
+        tmdb_id: selected.id.toString(),
+        type: mapped.media_type,
+        title: mapped.title,
+        poster_path: mapped.poster_path,
+        backdrop_path: mapped.backdrop_path,
+        overview: mapped.overview,
+        release_year: mapped.release_year,
+        genres: mapped.genres,
+        tmdb_rating: mapped.tmdb_rating,
         status,
-        user_rating: rating || undefined,
-        current_season: mapped.media_type === "tv" ? season : undefined,
-        current_episode: mapped.media_type === "tv" ? episode : undefined,
-        personal_notes: notes || undefined,
-      } as any);
+        rating: rating || null,
+        notes: notes || null,
+        current_season: mapped.media_type === "tv" ? season : null,
+        current_episode: mapped.media_type === "tv" ? episode : null,
+      });
+
+      if (res && !res.success) {
+        alert(res.error === "Already in your watchlist" ? res.error : "Error: " + res.error);
+        return;
+      }
+      
+      alert("Added to watchlist ✓");
+      router.refresh();
       onClose();
     });
   };
