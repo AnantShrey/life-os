@@ -72,8 +72,24 @@ export function CreateCollectionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}>
-      <div className="bg-card w-full max-w-[500px] max-h-[90vh] rounded-[24px] flex flex-col overflow-hidden"
+      <div className="bg-card w-full max-w-[500px] max-h-[85vh] rounded-[24px] flex flex-col overflow-hidden"
         style={{ boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }}>
+        
+        <style>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+          }
+          .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+          }
+        `}</style>
         
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 className="font-bold text-lg">{isEditing ? "Edit Collection" : "New Collection"}</h2>
@@ -82,16 +98,16 @@ export function CreateCollectionModal({
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5 flex flex-col gap-6">
+        <div className="overflow-y-auto custom-scrollbar p-5 flex flex-col gap-6">
           
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Name *</label>
+            <label className="block text-[13px] font-medium mb-1.5">Collection Name *</label>
             <input 
               autoFocus
               value={name} 
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Marvel Cinematic Universe" 
-              className={INPUT} 
+              className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[12px] px-[14px] py-[10px] text-[15px] focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-sky-500/15 transition-all"
             />
           </div>
 
@@ -148,7 +164,10 @@ export function CreateCollectionModal({
 
           {!isEditing && (
             <div className="flex flex-col min-h-[250px]">
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Add Items</label>
+              <div className="mb-2">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Add Items</label>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Search and select titles to add • {allWatchlistItems.length} titles available</p>
+              </div>
               
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -159,7 +178,7 @@ export function CreateCollectionModal({
                 />
               </div>
 
-              <div className="flex-1 overflow-y-auto border border-border rounded-[12px] bg-slate-50 dark:bg-slate-900/50 p-2 space-y-1">
+              <div className="flex-1 overflow-y-auto custom-scrollbar border border-border rounded-[12px] bg-slate-50 dark:bg-slate-900/50 p-2 space-y-1">
                 {filteredItems.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-6">No matching items found</p>
                 ) : (

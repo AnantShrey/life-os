@@ -31,6 +31,9 @@ import { CalorieRingCard } from "@/components/dashboard/CalorieRingCard";
 import { MacrosCard } from "@/components/dashboard/MacrosCard";
 import { WeeklyCalorieCard } from "@/components/dashboard/WeeklyCalorieCard";
 
+// Notes
+import { PinnedNotesCard } from "@/components/dashboard/PinnedNotesCard";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -53,7 +56,8 @@ export default async function DashboardPage() {
     prefsRes, 
     expensesRes, budgetsRes,
     watchlistRes,
-    nutritionLogsRes, nutritionGoalsRes, nutritionWeeklyRes
+    nutritionLogsRes, nutritionGoalsRes, nutritionWeeklyRes,
+    notesRes
   ] = await Promise.all([
     // Habits
     supabase.from("habits").select("*").eq("user_id", user.id).eq("archived", false).order("created_at", { ascending: true }),
@@ -79,6 +83,9 @@ export default async function DashboardPage() {
     supabase.from("nutrition_logs").select("*").eq("user_id", user.id).eq("log_date", today),
     supabase.from("nutrition_goals").select("*").eq("user_id", user.id).single(),
     supabase.from("nutrition_logs").select("log_date, calories").eq("user_id", user.id).gte("log_date", startOfCurrWeek).lte("log_date", endOfCurrWeek),
+    
+    // Notes
+    supabase.from("notes").select("*").eq("user_id", user.id).order("updated_at", { ascending: false }),
   ]);
 
   const habits = habitsRes.data || [];
@@ -91,6 +98,7 @@ export default async function DashboardPage() {
   const watchlist = watchlistRes.data || [];
   const nutritionToday = nutritionLogsRes.data || [];
   const nutritionGoals = nutritionGoalsRes.data || { calories: 2000, protein_g: 150, carbs_g: 250, fat_g: 65 };
+  const notes = notesRes.data || [];
   
   // Group nutrition weekly data
   const nutritionWeekly = Array.from({ length: 7 }, (_, i) => {
@@ -223,6 +231,16 @@ export default async function DashboardPage() {
             </div>
             <div className="col-span-12 md:col-span-4">
               <WeeklyCalorieCard data={nutritionWeekly} goal={nutritionGoals.calories} />
+            </div>
+          </div>
+        </section>
+
+        {/* NOTES */}
+        <section>
+          <SectionLabel>Notes</SectionLabel>
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-12 md:col-span-4">
+              <PinnedNotesCard notes={notes} />
             </div>
           </div>
         </section>

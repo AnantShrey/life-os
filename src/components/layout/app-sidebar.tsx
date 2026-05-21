@@ -15,6 +15,7 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  StickyNote,
 } from "lucide-react";
 
 const navItems = [
@@ -26,7 +27,8 @@ const navItems = [
   { name: "Watchlist", href: "/watchlist", icon: Film },
   { name: "Nutrition", href: "/nutrition", icon: Utensils },
   { name: "Expenses",  href: "/expenses",  icon: DollarSign },
-  { name: "Settings",   href: "/settings",  icon: Settings },
+  { name: "Notes",     href: "/notes",     icon: StickyNote },
+  { name: "Settings",  href: "/settings",  icon: Settings },
 ];
 
 export function AppSidebar() {
