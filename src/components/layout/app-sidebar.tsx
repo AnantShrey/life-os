@@ -16,6 +16,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   StickyNote,
+  Target,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { name: "Nutrition", href: "/nutrition", icon: Utensils },
   { name: "Expenses",  href: "/expenses",  icon: DollarSign },
   { name: "Notes",     href: "/notes",     icon: StickyNote },
+  { name: "Goals",     href: "/goals",     icon: Target },
   { name: "Settings",  href: "/settings",  icon: Settings },
 ];
 

@@ -34,6 +34,9 @@ import { WeeklyCalorieCard } from "@/components/dashboard/WeeklyCalorieCard";
 // Notes
 import { PinnedNotesCard } from "@/components/dashboard/PinnedNotesCard";
 
+// Goals
+import { GoalsDashboardCard } from "@/components/dashboard/GoalsDashboardCard";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -57,7 +60,8 @@ export default async function DashboardPage() {
     expensesRes, budgetsRes,
     watchlistRes,
     nutritionLogsRes, nutritionGoalsRes, nutritionWeeklyRes,
-    notesRes
+    notesRes,
+    goalsRes
   ] = await Promise.all([
     // Habits
     supabase.from("habits").select("*").eq("user_id", user.id).eq("archived", false).order("created_at", { ascending: true }),
@@ -86,6 +90,9 @@ export default async function DashboardPage() {
     
     // Notes
     supabase.from("notes").select("*").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    
+    // Goals
+    supabase.from("goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
   ]);
 
   const habits = habitsRes.data || [];
@@ -99,6 +106,14 @@ export default async function DashboardPage() {
   const nutritionToday = nutritionLogsRes.data || [];
   const nutritionGoals = nutritionGoalsRes.data || { calories: 2000, protein_g: 150, carbs_g: 250, fat_g: 65 };
   const notes = notesRes.data || [];
+  const goals = goalsRes.data || [];
+
+  // Fetch milestones for the fetched goals
+  const { data: milestonesRes } = await supabase
+    .from("goal_milestones")
+    .select("*")
+    .in("goal_id", goals.map(g => g.id));
+  const milestones = milestonesRes || [];
   
   // Group nutrition weekly data
   const nutritionWeekly = Array.from({ length: 7 }, (_, i) => {
@@ -235,12 +250,16 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* NOTES */}
+        {/* NOTES & GOALS */}
         <section>
-          <SectionLabel>Notes</SectionLabel>
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 md:col-span-4">
+              <SectionLabel>Notes</SectionLabel>
               <PinnedNotesCard notes={notes} />
+            </div>
+            <div className="col-span-12 md:col-span-8">
+              <SectionLabel>Goals</SectionLabel>
+              <GoalsDashboardCard goals={goals} milestones={milestones} />
             </div>
           </div>
         </section>

@@ -1,16 +1,16 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-const COLORS = [
-  { id: "default", bg: "bg-slate-200 dark:bg-slate-700" },
-  { id: "red", bg: "bg-red-300 dark:bg-red-800" },
-  { id: "orange", bg: "bg-orange-300 dark:bg-orange-800" },
-  { id: "yellow", bg: "bg-yellow-300 dark:bg-yellow-800" },
-  { id: "green", bg: "bg-green-300 dark:bg-green-800" },
-  { id: "teal", bg: "bg-teal-300 dark:bg-teal-800" },
-  { id: "blue", bg: "bg-blue-300 dark:bg-blue-800" },
-  { id: "purple", bg: "bg-purple-300 dark:bg-purple-800" },
-  { id: "pink", bg: "bg-pink-300 dark:bg-pink-800" },
+const GOAL_COLORS = [
+  { value: 'default', bg: 'bg-slate-100', ring: 'ring-slate-400', label: 'Default' },
+  { value: 'red',     bg: 'bg-red-400',    ring: 'ring-red-400',    label: 'Red' },
+  { value: 'orange',  bg: 'bg-orange-400', ring: 'ring-orange-400', label: 'Orange' },
+  { value: 'yellow',  bg: 'bg-yellow-400', ring: 'ring-yellow-400', label: 'Yellow' },
+  { value: 'green',   bg: 'bg-green-400',  ring: 'ring-green-400',  label: 'Green' },
+  { value: 'teal',    bg: 'bg-teal-400',   ring: 'ring-teal-400',   label: 'Teal' },
+  { value: 'blue',    bg: 'bg-blue-400',   ring: 'ring-blue-400',   label: 'Blue' },
+  { value: 'purple',  bg: 'bg-purple-400', ring: 'ring-purple-400', label: 'Purple' },
+  { value: 'pink',    bg: 'bg-pink-400',   ring: 'ring-pink-400',   label: 'Pink' },
 ];
 
 export function ColorPicker({
@@ -37,19 +37,25 @@ export function ColorPicker({
   return (
     <div 
       ref={ref}
-      className="absolute bottom-full left-0 mb-2 p-2 bg-card border border-border rounded-[12px] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex gap-1.5 z-50"
+      className="absolute bottom-full left-0 mb-2 p-3 bg-card border border-border rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex flex-wrap gap-3 z-50 w-max max-w-[280px]"
     >
-      {COLORS.map(c => (
+      {GOAL_COLORS.map((color) => (
         <button
-          key={c.id}
+          key={color.value}
+          type="button"
           onClick={() => {
-            onSelect(c.id);
+            onSelect(color.value);
             onClose();
           }}
-          className={`w-6 h-6 rounded-full ${c.bg} transition-transform hover:scale-110 ${
-            selected === c.id ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : ""
-          }`}
-          title={c.id}
+          className={`
+            w-8 h-8 rounded-full ${color.bg}
+            transition-all duration-150 ring-offset-card
+            ${selected === color.value
+              ? `ring-2 ring-offset-2 ${color.ring} scale-110`
+              : 'hover:scale-110 hover:ring-2 hover:ring-offset-2 hover:ring-slate-300 dark:hover:ring-slate-600'
+            }
+          `}
+          title={color.label}
         />
       ))}
     </div>
