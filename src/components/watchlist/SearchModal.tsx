@@ -24,6 +24,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState(false);
   const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -36,10 +37,15 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
     setIsLoading(true);
     setError(false);
     timer.current = setTimeout(async () => {
+      // Cancel any previous in-flight request
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
       try {
-        const res = await searchTMDB(query);
+        const res = await searchTMDB(query, abortRef.current.signal); // pass signal
         setResults(res.slice(0, 12));
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === "AbortError") return; // ignore cancelled requests
         setError(true);
         setResults([]);
       } finally {
@@ -48,6 +54,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
     }, 400);
     return () => {
       if (timer.current) clearTimeout(timer.current);
+      if (abortRef.current) abortRef.current.abort();
     };
   }, [query]);
 

@@ -6,13 +6,13 @@ function getHeaders() {
   return { "Content-Type": "application/json" };
 }
 
-export async function searchTMDB(query: string) {
+export async function searchTMDB(query: string, signal?: AbortSignal) {
   if (!query.trim() || query.length < 2) return [];
   const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const url = `${TMDB_BASE}/search/multi?query=${encodeURIComponent(query)}&api_key=${key}&include_adult=false&language=en-US&page=1`;
   
   try {
-    const res = await fetch(url, { headers: getHeaders() });
+    const res = await fetch(url, { headers: getHeaders(), signal }); // pass signal here
     if (!res.ok) {
       console.error("TMDB search failed:", res.status, res.statusText);
       throw new Error("Search failed");
