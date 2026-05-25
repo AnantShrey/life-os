@@ -87,7 +87,11 @@ export function AppSidebar() {
             className="text-xl font-bold text-primary flex items-center gap-3 overflow-hidden"
           >
             <div className="w-7 h-7 rounded-[8px] bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold flex-shrink-0">
-              L
+              <img 
+                src="/favicon.ico" 
+                alt="Life OS" 
+                className="w-5 h-5 brightness-0 invert dark:invert-0" 
+              />
             </div>
             <span
               className="whitespace-nowrap transition-all duration-200 overflow-hidden"
