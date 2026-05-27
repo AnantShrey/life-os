@@ -28,7 +28,7 @@ export async function createGoal(goal: any, milestones?: string[]) {
   return { success: true, data: newGoal };
 }
 
-export async function updateGoal(id: string, updates: any) {
+export async function updateGoal(id: string, updates: Record<string, any>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };

@@ -1,0 +1,16 @@
+{
+  "name": "Life OS",
+  "short_name": "Life OS",
+  "description": "Your ultimate personal productivity dashboard",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -14,14 +14,19 @@ export async function addTask(formData: FormData) {
 
   if (!title) return;
 
-  await supabase.from("tasks").insert({
-    user_id: user.id,
-    title,
-    due_date: dueDate ? dueDate : null,
-    priority,
-  });
-
-  revalidatePath("/tasks");
+  try {
+    await supabase.from("tasks").insert({
+      user_id: user.id,
+      title,
+      due_date: dueDate ? dueDate : null,
+      priority,
+    });
+    revalidatePath("/tasks");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Add task error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function toggleTask(id: string, completed: boolean) {
@@ -29,16 +34,22 @@ export async function toggleTask(id: string, completed: boolean) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const updates: any = { completed };
+  const updates: Record<string, any> = { completed };
   if (completed) {
     updates.completed_at = new Date().toISOString();
   } else {
     updates.completed_at = null;
   }
 
-  await supabase.from("tasks").update(updates).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/tasks");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("tasks").update(updates).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/tasks");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Toggle task error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function deleteTask(id: string) {
@@ -46,11 +57,18 @@ export async function deleteTask(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("tasks").delete().eq("id", id).eq("user_id", user.id);
-  revalidatePath("/tasks");
+  try {
+    await supabase.from("tasks").delete().eq("id", id).eq("user_id", user.id);
+    revalidatePath("/tasks");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Delete task error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 import { getCalendarClient } from "@/lib/google-calendar";
+import { logger } from "@/lib/logger";
 
 export async function syncTaskToCalendar(taskId: string) {
   const supabase = await createClient();
@@ -97,8 +115,8 @@ export async function syncTaskToCalendar(taskId: string) {
       revalidatePath("/tasks");
       return { success: true };
     }
-  } catch (error: any) {
-    console.error("Sync error:", error);
+  } catch (e) { const error = e as Error;
+    logger.error("Sync error:", error);
     return { success: false, error: error.message };
   }
 }

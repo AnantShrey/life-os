@@ -2,6 +2,7 @@
 
 import { getCalendarClient } from "@/lib/google-calendar";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
 
 export async function fetchCalendarEvents(timeMin: string, timeMax: string) {
   try {
@@ -16,8 +17,8 @@ export async function fetchCalendarEvents(timeMin: string, timeMax: string) {
     });
     
     return { success: true, events: response.data.items || [] };
-  } catch (error: any) {
-    console.error("Failed to fetch calendar events:", error.message);
+  } catch (e) { const error = e as Error;
+    logger.error("Failed to fetch calendar events:", error.message);
     return { success: false, error: error.message };
   }
 }
@@ -39,7 +40,7 @@ export async function createCalendarEvent(eventData: any) {
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
     return { success: true, event: response.data };
-  } catch (error: any) {
+  } catch (e) { const error = e as Error;
     return { success: false, error: error.message };
   }
 }
@@ -62,7 +63,7 @@ export async function updateCalendarEvent(eventId: string, eventData: any) {
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
     return { success: true, event: response.data };
-  } catch (error: any) {
+  } catch (e) { const error = e as Error;
     return { success: false, error: error.message };
   }
 }
@@ -78,7 +79,7 @@ export async function deleteCalendarEvent(eventId: string) {
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
     return { success: true };
-  } catch (error: any) {
+  } catch (e) { const error = e as Error;
     return { success: false, error: error.message };
   }
 }

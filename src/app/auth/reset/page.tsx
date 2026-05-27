@@ -1,10 +1,10 @@
-import { LoginForm } from "./LoginForm";
+import { ResetForm } from "./ResetForm";
 import { Suspense } from "react";
 
-export default function LoginPage() {
+export default function ResetPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-muted/30" />}>
-      <LoginForm />
+      <ResetForm />
     </Suspense>
   );
 }

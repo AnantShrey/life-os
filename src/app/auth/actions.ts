@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { logger } from "@/lib/logger";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -16,7 +17,7 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    console.error("Login error:", error.message);
+    logger.error("Login error:", error.message);
     return redirect("/login?message=" + encodeURIComponent("Invalid email or password"));
   }
 
@@ -36,7 +37,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    console.error("Signup error:", error.message);
+    logger.error("Signup error:", error.message);
     return redirect("/signup?message=" + encodeURIComponent("Could not create account. Please try again."));
   }
 
@@ -52,4 +53,34 @@ export async function logout() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+export async function resetPassword(formData: FormData) {
+  const supabase = await createClient();
+  const email = formData.get("email") as string;
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/update-password`,
+  });
+
+  if (error) {
+    logger.error("Reset password error:", error.message);
+    return redirect("/auth/reset?message=" + encodeURIComponent("Failed to send reset email: " + error.message));
+  }
+
+  return redirect("/auth/reset?message=" + encodeURIComponent("Check your email for the password reset link"));
+}
+
+export async function updatePassword(formData: FormData) {
+  const supabase = await createClient();
+  const password = formData.get("password") as string;
+  
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    logger.error("Update password error:", error.message);
+    return redirect("/auth/update-password?message=" + encodeURIComponent("Failed to update password: " + error.message));
+  }
+
+  return redirect("/login?message=" + encodeURIComponent("Password updated successfully. Please log in."));
 }

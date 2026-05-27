@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Unlink, X } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 export function CalendarHeader() {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -16,7 +17,7 @@ export function CalendarHeader() {
       // Refresh the page — it will now show the connect prompt
       router.refresh();
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     } finally {
       setLoading(false);
       setShowConfirm(false);

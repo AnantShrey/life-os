@@ -13,7 +13,9 @@ Life OS is a comprehensive, full-stack personal productivity dashboard engineere
 - **Habit Tracker** — Flexible habit tracking supporting daily, weekly, and monthly frequencies alongside robust streak calculations and visual heatmaps.
 - **Books Tracker** — Integrated with the Google Books API to manage reading progress, track current books, and visualize your digital library.
 - **Nutrition Tracker** — A comprehensive dietary module featuring meal logging and macro tracking, powered by the Open Food Facts API.
-- **Watchlist** — Connected to the TMDB API to search, discover, and organize your movies and TV shows with custom status tracking (Want, Watching, Watched).
+- **Goals Module** — A dedicated space to set, track, and visualize long-term objectives across various categories with milestone support and dynamic progress tracking.
+- **Notes Module** — A streamlined note-taking interface with rich text editing, categorization, and quick search capabilities.
+- **Watchlist** — Connected to the TMDB API to search, discover, and organize your movies and TV shows with custom status tracking (Want, Watching, Watched) and custom collections.
 - **Expense Tracker** — A streamlined financial hub for budget management, tracking recurring expenses, and visualizing spending habits over time.
 - **Google Calendar** — Seamless two-way synchronization enabling you to view and create Google Calendar events directly within the dashboard.
 - **Settings** — Deeply customizable preferences covering currency localization, appearance, and account management.
@@ -22,7 +24,7 @@ Life OS is a comprehensive, full-stack personal productivity dashboard engineere
 
 | Category | Technology |
 | :--- | :--- |
-| **Frontend** | Next.js 14, TypeScript, Tailwind CSS |
+| **Frontend** | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS |
 | **Backend** | Supabase (PostgreSQL), Row Level Security |
 | **Auth** | Supabase Auth (email/password) |
 | **APIs** | Google Books, TMDB, Open Food Facts, Google Calendar |
@@ -66,7 +68,8 @@ The application requires the following environment variables. Please refer to `.
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — Google OAuth 2.0 Client ID for Calendar integration.
 - `GOOGLE_CLIENT_SECRET` — Google OAuth 2.0 Client Secret for Calendar integration.
 - `NEXT_PUBLIC_GOOGLE_CALENDAR_API_KEY` — API key for accessing Google Calendar data.
-- `NEXT_PUBLIC_TMDB_API_KEY` — API key for querying movies and TV shows from The Movie Database.
+- `TMDB_API_KEY` — API key for querying movies and TV shows from The Movie Database (now used server-side).
+- `GOOGLE_BOOKS_API_KEY` — Server-side API key for Google Books proxy.
 - `NEXT_PUBLIC_APP_URL` — The absolute URL of your application (e.g., `http://localhost:3000`).
 
 ## 🌐 Live Demo

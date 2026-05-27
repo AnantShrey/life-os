@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 const TMDB_BASE = "https://api.themoviedb.org/3";
 export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 export const TMDB_THUMB_BASE = "https://image.tmdb.org/t/p/w200";
@@ -18,7 +19,7 @@ export async function searchTMDB(query: string, signal?: AbortSignal) {
     return data.results || [];
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') throw err;
-    console.error("TMDB search proxy error:", err);
+    logger.error("TMDB search proxy error:", err);
     throw err;
   }
 }
@@ -31,7 +32,7 @@ export async function getTMDBDetails(id: number, type: "movie" | "tv") {
     }
     return await res.json();
   } catch (err) {
-    console.error("TMDB details proxy error:", err);
+    logger.error("TMDB details proxy error:", err);
     return null;
   }
 }

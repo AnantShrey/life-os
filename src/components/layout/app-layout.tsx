@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "./app-sidebar";
 import { AppTopbar } from "./app-topbar";
+import { CommandPalette } from "./CommandPalette";
 
 export function AppLayout({
   children,
@@ -22,6 +23,7 @@ export function AppLayout({
           </div>
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

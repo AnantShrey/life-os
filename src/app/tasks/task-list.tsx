@@ -1,9 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
-import { toggleTask, deleteTask } from "./actions";
+import { useState, useTransition, useOptimistic } from "react";
+import { toggleTask, deleteTask, syncTaskToCalendar } from "./actions";
 import { Check, Trash2, Calendar, Flag } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Task = {
   id: string;
@@ -13,32 +15,69 @@ type Task = {
   completed: boolean;
 };
 
-import { syncTaskToCalendar } from "./actions";
-
+};
 export function TaskList({ tasks, syncedTaskIds }: { tasks: Task[], syncedTaskIds: Set<string> }) {
+  const [optimisticTasks, addOptimisticTask] = useOptimistic(
+    tasks,
+    (state, action: { type: 'toggle' | 'delete', id: string }) => {
+      switch (action.type) {
+        case 'toggle':
+          return state.map(t => t.id === action.id ? { ...t, completed: !t.completed } : t);
+        case 'delete':
+          return state.filter(t => t.id !== action.id);
+        default:
+          return state;
+      }
+    }
+  );
+
   return (
     <div className="flex flex-col gap-3 mt-6">
-      {tasks.length === 0 ? (
+      {optimisticTasks.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No tasks found. Add one above!</p>
       ) : (
-        tasks.map((task) => <TaskItem key={task.id} task={task} isSynced={syncedTaskIds.has(task.id)} />)
+        optimisticTasks.map((task) => (
+          <TaskItem 
+            key={task.id} 
+            task={task} 
+            isSynced={syncedTaskIds.has(task.id)} 
+            addOptimisticTask={addOptimisticTask}
+          />
+        ))
       )}
     </div>
   );
 }
 
-function TaskItem({ task, isSynced }: { task: Task, isSynced: boolean }) {
+function TaskItem({ 
+  task, 
+  isSynced, 
+  addOptimisticTask 
+}: { 
+  task: Task, 
+  isSynced: boolean,
+  addOptimisticTask: (action: { type: 'toggle' | 'delete', id: string }) => void 
+}) {
   const [isPending, startTransition] = useTransition();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleToggle = () => {
-    startTransition(() => {
-      toggleTask(task.id, !task.completed);
+    startTransition(async () => {
+      addOptimisticTask({ type: 'toggle', id: task.id });
+      const res = await toggleTask(task.id, !task.completed);
+      if (res && !res.success) toast.error(res.error || "Failed to update task");
     });
   };
 
-  const handleDelete = () => {
-    startTransition(() => {
-      deleteTask(task.id);
+  const executeDelete = () => {
+    startTransition(async () => {
+      addOptimisticTask({ type: 'delete', id: task.id });
+      const res = await deleteTask(task.id);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to delete task");
+      } else {
+        toast.success("Task deleted");
+      }
     });
   };
 
@@ -47,10 +86,12 @@ function TaskItem({ task, isSynced }: { task: Task, isSynced: boolean }) {
       const res = await syncTaskToCalendar(task.id);
       if (res && !res.success) {
         if (res.error === "Calendar not connected") {
-          alert("Please connect your Google Calendar in the Calendar tab first.");
+          toast.error("Please connect your Google Calendar in the Calendar tab first.");
         } else {
-          alert(`Sync failed: ${res.error}`);
+          toast.error(`Sync failed: ${res.error}`);
         }
+      } else if (res && res.success) {
+        toast.success("Synced to Calendar");
       }
     });
   };
@@ -104,13 +145,21 @@ function TaskItem({ task, isSynced }: { task: Task, isSynced: boolean }) {
           {isSynced ? <Check className="w-4 h-4" /> : <Calendar className="w-4 h-4" />}
         </button>
         <button 
-          onClick={handleDelete}
+          onClick={() => setShowDeleteConfirm(true)}
           disabled={isPending}
           className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
         >
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+      />
     </div>
   );
 }

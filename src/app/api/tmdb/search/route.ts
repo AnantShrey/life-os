@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { logger } from "@/lib/logger";
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
 
   const key = process.env.TMDB_API_KEY;
   if (!key) {
-    console.error("Missing TMDB_API_KEY on server");
+    logger.error("Missing TMDB_API_KEY on server");
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
   }
 
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
   try {
     const res = await fetch(url, { headers: { "Content-Type": "application/json" } });
     if (!res.ok) {
-      console.error("TMDB search failed:", res.status, res.statusText);
+      logger.error("TMDB search failed:", res.status, res.statusText);
       return NextResponse.json({ error: "Search failed" }, { status: res.status });
     }
     const data = await res.json();
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
     
     return NextResponse.json({ results: filtered });
   } catch (err) {
-    console.error("TMDB search error:", err);
+    logger.error("TMDB search error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

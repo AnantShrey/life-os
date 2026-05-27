@@ -3,6 +3,8 @@
 import { useState, useTransition, useEffect } from "react";
 import { searchGoogleBooks, addBook, updateBookStatus, updateBookRating, deleteBook, addBookPages, toggleBookPause } from "./actions";
 import { Search, Plus, Book, Star, Trash2, Pause, Play, TrendingUp, Clock, BookOpen, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function BookSearch() {
   const [query, setQuery] = useState("");
@@ -21,9 +23,14 @@ export function BookSearch() {
   };
 
   const handleAdd = (book: any) => {
-    startTransition(() => {
-      addBook(book);
-      setResults(results.filter(r => r.google_books_id !== book.google_books_id));
+    startTransition(async () => {
+      const res = await addBook(book);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to add book");
+      } else {
+        toast.success("Added to library");
+        setResults(results.filter(r => r.google_books_id !== book.google_books_id));
+      }
     });
   };
 
@@ -95,6 +102,7 @@ export function BookCard({ book }: { book: any }) {
   const [pagesToAdd, setPagesToAdd] = useState("");
   // local refresh for elapsed time
   const [now, setNow] = useState(Date.now());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (book.status === "reading" && !book.is_paused) {
@@ -104,8 +112,9 @@ export function BookCard({ book }: { book: any }) {
   }, [book.status, book.is_paused]);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    startTransition(() => {
-      updateBookStatus(book.id, e.target.value);
+    startTransition(async () => {
+      const res = await updateBookStatus(book.id, e.target.value);
+      if (res && !res.success) toast.error(res.error || "Failed to update status");
     });
   };
 
@@ -113,31 +122,37 @@ export function BookCard({ book }: { book: any }) {
     e.preventDefault();
     const val = parseInt(pagesToAdd);
     if (val > 0) {
-      startTransition(() => {
-        addBookPages(book.id, val);
-        setPagesToAdd("");
+      startTransition(async () => {
+        const res = await addBookPages(book.id, val);
+        if (res && !res.success) toast.error(res.error || "Failed to log pages");
+        else {
+          toast.success("Pages logged");
+          setPagesToAdd("");
+        }
       });
     }
   };
 
   const handleTogglePause = () => {
-    startTransition(() => {
-      toggleBookPause(book.id, !book.is_paused);
+    startTransition(async () => {
+      const res = await toggleBookPause(book.id, !book.is_paused);
+      if (res && !res.success) toast.error(res.error || "Failed to toggle pause");
     });
   };
 
   const handleRating = (rating: number) => {
-    startTransition(() => {
-      updateBookRating(book.id, rating);
+    startTransition(async () => {
+      const res = await updateBookRating(book.id, rating);
+      if (res && !res.success) toast.error(res.error || "Failed to update rating");
     });
   };
 
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to remove this book?")) {
-      startTransition(() => {
-        deleteBook(book.id);
-      });
-    }
+  const executeDelete = () => {
+    startTransition(async () => {
+      const res = await deleteBook(book.id);
+      if (res && !res.success) toast.error(res.error || "Failed to delete book");
+      else toast.success("Book deleted");
+    });
   };
 
   const getReadingStats = () => {
@@ -195,7 +210,7 @@ export function BookCard({ book }: { book: any }) {
             <p className="text-muted-foreground">{book.author}</p>
           </div>
           <button 
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={isPending}
             className="opacity-0 group-hover:opacity-100 p-2 text-muted-foreground hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
             title="Delete Book"
@@ -318,6 +333,14 @@ export function BookCard({ book }: { book: any }) {
           )}
         </div>
       </div>
+    </div>
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Book"
+        description="Are you sure you want to remove this book from your library? This action cannot be undone."
+      />
     </div>
   );
 }

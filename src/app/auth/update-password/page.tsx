@@ -1,10 +1,10 @@
-import { LoginForm } from "./LoginForm";
+import { UpdatePasswordForm } from "./UpdatePasswordForm";
 import { Suspense } from "react";
 
-export default function LoginPage() {
+export default function UpdatePasswordPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-muted/30" />}>
-      <LoginForm />
+      <UpdatePasswordForm />
     </Suspense>
   );
 }

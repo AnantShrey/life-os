@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Library, Pencil, Trash2 } from "lucide-react";
 import { deleteCollection } from "@/app/watchlist/actions";
 import { CreateCollectionModal } from "./CreateCollectionModal";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type Collection = {
   id: string;
@@ -37,6 +39,7 @@ export function CollectionCard({
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const items = collection.watchlist_collections || [];
@@ -55,11 +58,12 @@ export function CollectionCard({
   const displayPosters = posters.slice(0, 4);
   const remaining = posters.length - 4;
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm(`Are you sure you want to delete the collection '${collection.name}'? Your watchlist titles will not be affected.`)) {
-      startTransition(async () => { await deleteCollection(collection.id); });
-    }
+  const executeDelete = () => {
+    startTransition(async () => {
+      const res = await deleteCollection(collection.id);
+      if (res && !res.success) toast.error(res.error || "Failed to delete collection");
+      else toast.success("Collection deleted");
+    });
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -149,7 +153,7 @@ export function CollectionCard({
               <Pencil className="w-3.5 h-3.5" />
             </button>
             <button 
-              onClick={handleDelete}
+              onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
               disabled={pending}
               className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/30 transition-colors"
             >
@@ -167,6 +171,14 @@ export function CollectionCard({
           onClose={() => setShowEdit(false)}
         />
       )}
+      
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Collection"
+        description={`Are you sure you want to delete the collection '${collection.name}'? Your watchlist titles will not be affected.`}
+      />
     </>
   );
 }

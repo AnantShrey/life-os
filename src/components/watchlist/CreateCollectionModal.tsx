@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { X, Search, Check } from "lucide-react";
 import { createCollection, updateCollection } from "@/app/watchlist/actions";
+import { toast } from "sonner";
 
 const INPUT = "w-full bg-muted border border-border rounded-[12px] px-4 py-2.5 text-[13px] focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all";
 
@@ -51,19 +52,21 @@ export function CreateCollectionModal({
     if (!name.trim()) return;
     startTransition(async () => {
       if (isEditing) {
-        await updateCollection(initialData.id, {
+        const res = await updateCollection(initialData.id, {
           name,
           description: description || null,
           cover_watchlist_id: coverId,
         });
-        alert("Collection updated ✓");
+        if (res && !res.success) toast.error(res.error || "Failed to update collection");
+        else toast.success("Collection updated");
       } else {
-        await createCollection({
+        const res = await createCollection({
           name,
           description: description || null,
           cover_watchlist_id: coverId,
         }, Array.from(selectedItems));
-        alert("Collection created ✓");
+        if (res && !res.success) toast.error(res.error || "Failed to create collection");
+        else toast.success("Collection created");
       }
       onClose();
     });

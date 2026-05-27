@@ -5,6 +5,7 @@ import Image from "next/image";
 import { searchTMDB, getTMDBDetails, mapTMDBResult, TMDB_THUMB_BASE, TMDB_IMAGE_BASE } from "@/lib/tmdb";
 import { addToWatchlist } from "@/app/watchlist/actions";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Status = "want" | "watching" | "watched";
 
@@ -85,11 +86,11 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
       });
 
       if (res && !res.success) {
-        alert(res.error === "Already in your watchlist" ? res.error : "Error: " + res.error);
+        toast.error(res.error === "Already in your watchlist" ? res.error : "Error: " + res.error);
         return;
       }
       
-      alert("Added to watchlist ✓");
+      toast.success("Added to watchlist");
       router.refresh();
       onClose();
     });

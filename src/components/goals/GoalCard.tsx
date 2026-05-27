@@ -5,6 +5,8 @@ import { MilestoneList, Milestone } from "./MilestoneList";
 import { ProgressBar } from "./ProgressBar";
 import { CheckCircle2, MoreHorizontal, Pencil, Trash2, CheckSquare, BarChart2, Flag } from "lucide-react";
 import { toggleGoalCompletion, deleteGoal, updateGoal } from "@/app/goals/actions";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type Goal = {
   id: string;
@@ -58,30 +60,34 @@ export function GoalCard({
   const [showMenu, setShowMenu] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [updateVal, setUpdateVal] = useState(goal.current_value?.toString() || "0");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const c = COLOR_MAP[goal.color] || COLOR_MAP.default;
   const isCompleted = goal.completed;
   
   const handleToggleComplete = () => {
-    startTransition(() => {
-      toggleGoalCompletion(goal.id, !isCompleted);
+    startTransition(async () => {
+      const res = await toggleGoalCompletion(goal.id, !isCompleted);
+      if (res && !res.success) toast.error(res.error || "Failed to toggle completion");
     });
   };
 
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this goal?")) {
-      startTransition(() => {
-        deleteGoal(goal.id);
-      });
-    }
+  const executeDelete = () => {
+    startTransition(async () => {
+      const res = await deleteGoal(goal.id);
+      if (res && !res.success) toast.error(res.error || "Failed to delete goal");
+      else toast.success("Goal deleted");
+    });
   };
 
   const handleSaveProgress = () => {
     const val = parseFloat(updateVal);
     if (!isNaN(val)) {
-      startTransition(() => {
-        updateGoal(goal.id, { current_value: val });
+      startTransition(async () => {
+        const res = await updateGoal(goal.id, { current_value: val });
+        if (res && !res.success) toast.error(res.error || "Failed to update progress");
+        else toast.success("Progress saved");
         setShowUpdate(false);
       });
     }
@@ -138,7 +144,7 @@ export function GoalCard({
                 <button onClick={() => { onEdit(goal); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-muted text-left">
                   <Pencil className="w-3.5 h-3.5" /> Edit
                 </button>
-                <button onClick={handleDelete} className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 text-left">
+                <button onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }} className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 text-left">
                   <Trash2 className="w-3.5 h-3.5" /> Delete
                 </button>
               </div>
@@ -260,6 +266,13 @@ export function GoalCard({
         )}
       </div>
 
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Goal"
+        description="Are you sure you want to delete this goal? This action cannot be undone."
+      />
     </div>
   );
 }

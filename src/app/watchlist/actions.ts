@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
 
 export async function addToWatchlist(item: any) {
   const supabase = await createClient();
@@ -38,7 +39,7 @@ export async function addToWatchlist(item: any) {
   }).select();
 
   if (error) {
-    console.error("Supabase insert error:", error);
+    logger.error("Supabase insert error:", error);
     return { success: false, error: error.message };
   }
 
@@ -50,19 +51,29 @@ export async function addToWatchlist(item: any) {
 export async function updateWatchlistItem(id: string, data: Record<string, any>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("watchlist").update(data).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/watchlist");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("watchlist").update(data).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/watchlist");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Update watchlist item error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function deleteWatchlistItem(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("watchlist").delete().eq("id", id).eq("user_id", user.id);
-  revalidatePath("/watchlist");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("watchlist").delete().eq("id", id).eq("user_id", user.id);
+    revalidatePath("/watchlist");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Delete watchlist item error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function createCollection(data: { name: string; description?: string | null; cover_watchlist_id?: string | null }, itemIds: string[] = []) {

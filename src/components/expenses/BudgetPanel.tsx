@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { Pencil, Check, Plus } from "lucide-react";
 import { CATEGORIES, formatCurrency, getCategoryConfig } from "@/lib/expense-utils";
 import { upsertBudget } from "@/app/expenses/actions";
+import { toast } from "sonner";
 
 type Budget = { id: string; category: string; amount: number; month: number; year: number };
 type Expense = { category: string; amount: number };
@@ -26,8 +27,13 @@ export function BudgetPanel({
 
   const save = (category: string, amount: number) => {
     startTransition(async () => {
-      await upsertBudget(category, amount, month, year);
-      setEditing(null);
+      const res = await upsertBudget(category, amount, month, year);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to save budget");
+      } else {
+        toast.success("Budget saved");
+        setEditing(null);
+      }
     });
   };
 

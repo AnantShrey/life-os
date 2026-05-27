@@ -13,13 +13,18 @@ export async function addHabit(formData: FormData) {
 
   if (!name) return;
 
-  await supabase.from("habits").insert({
-    user_id: user.id,
-    name,
-    description: description ? description : null,
-  });
-
-  revalidatePath("/habits");
+  try {
+    await supabase.from("habits").insert({
+      user_id: user.id,
+      name,
+      description: description ? description : null,
+    });
+    revalidatePath("/habits");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Add habit error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function addHabitWithFrequency(formData: FormData) {
@@ -40,16 +45,21 @@ export async function addHabitWithFrequency(formData: FormData) {
     try { frequency_days = JSON.parse(frequencyDaysRaw); } catch {}
   }
 
-  await supabase.from("habits").insert({
-    user_id: user.id,
-    name,
-    description: description || null,
-    frequency_type,
-    frequency_days,
-    end_date: end_date || null,
-  });
-
-  revalidatePath("/habits");
+  try {
+    await supabase.from("habits").insert({
+      user_id: user.id,
+      name,
+      description: description || null,
+      frequency_type,
+      frequency_days,
+      end_date: end_date || null,
+    });
+    revalidatePath("/habits");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Add habit error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function toggleHabitLog(habitId: string, logDate: string, currentlyCompleted: boolean) {
@@ -57,18 +67,23 @@ export async function toggleHabitLog(habitId: string, logDate: string, currently
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  if (currentlyCompleted) {
-    await supabase.from("habit_logs").delete().eq("habit_id", habitId).eq("log_date", logDate);
-  } else {
-    await supabase.from("habit_logs").insert({
-      habit_id: habitId,
-      log_date: logDate,
-      completed: true,
-    });
+  try {
+    if (currentlyCompleted) {
+      await supabase.from("habit_logs").delete().eq("habit_id", habitId).eq("log_date", logDate);
+    } else {
+      await supabase.from("habit_logs").insert({
+        habit_id: habitId,
+        log_date: logDate,
+        completed: true,
+      });
+    }
+    revalidatePath("/habits");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Toggle habit log error:", error);
+    return { success: false, error: error.message };
   }
-
-  revalidatePath("/habits");
-  revalidatePath("/dashboard"); 
 }
 
 export async function deleteHabit(id: string) {
@@ -76,12 +91,19 @@ export async function deleteHabit(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("habits").delete().eq("id", id).eq("user_id", user.id);
-  revalidatePath("/habits");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("habits").delete().eq("id", id).eq("user_id", user.id);
+    revalidatePath("/habits");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Delete habit error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 import { getCalendarClient } from "@/lib/google-calendar";
+import { logger } from "@/lib/logger";
 
 export async function syncHabitToCalendar(habitId: string) {
   const supabase = await createClient();
@@ -126,8 +148,8 @@ export async function syncHabitToCalendar(habitId: string) {
       revalidatePath("/habits");
       return { success: true };
     }
-  } catch (error: any) {
-    console.error("Sync error:", error);
+  } catch (e) { const error = e as Error;
+    logger.error("Sync error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -152,8 +174,8 @@ export async function unsyncHabitFromCalendar(habitId: string) {
     
     revalidatePath("/habits");
     return { success: true };
-  } catch (error: any) {
-    console.error("Unsync error:", error);
+  } catch (e) { const error = e as Error;
+    logger.error("Unsync error:", error);
     return { success: false, error: error.message };
   }
 }

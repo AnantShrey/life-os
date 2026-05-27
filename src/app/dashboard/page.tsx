@@ -37,6 +37,9 @@ import { PinnedNotesCard } from "@/components/dashboard/PinnedNotesCard";
 // Goals
 import { GoalsDashboardCard } from "@/components/dashboard/GoalsDashboardCard";
 
+// Insights
+import { DailyInsightsCard } from "@/components/dashboard/DailyInsightsCard";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -157,6 +160,20 @@ export default async function DashboardPage() {
 
       <div className="flex flex-col gap-12 max-w-7xl mx-auto pb-12">
         
+        {/* INSIGHTS */}
+        <section>
+          <DailyInsightsCard 
+            tasksDue={dueTodayAll.length}
+            tasksTotal={tasks.filter(t => !t.completed).length}
+            habitsCompleted={habits.filter(h => habitLogs.some(l => l.habit_id === h.id && l.completed)).length}
+            habitsTotal={habits.length}
+            calories={nutritionTotals.calories}
+            calorieGoal={nutritionGoals.calories}
+            expensesTotal={expenses.reduce((s, e) => s + Number(e.amount), 0)}
+            symbol={prefs.currency_symbol}
+          />
+        </section>
+
         {/* HABITS */}
         <section>
           <SectionLabel>Habits</SectionLabel>

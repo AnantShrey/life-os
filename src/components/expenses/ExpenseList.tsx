@@ -5,6 +5,8 @@ import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { getCategoryConfig, formatCurrency } from "@/lib/expense-utils";
 import { deleteExpense } from "@/app/expenses/actions";
 import { ExpenseForm } from "./ExpenseForm";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Expense = {
   id: string; amount: number; category: string; description: string;
@@ -22,6 +24,16 @@ function dateLabel(dateStr: string): string {
 export function ExpenseList({ expenses, symbol }: { expenses: Expense[]; symbol: string }) {
   const [editing, setEditing] = useState<Expense | null>(null);
   const [pending, startTransition] = useTransition();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const executeDelete = () => {
+    if (!deletingId) return;
+    startTransition(async () => {
+      const res = await deleteExpense(deletingId);
+      if (res && !res.success) toast.error(res.error || "Failed to delete expense");
+      else toast.success("Expense deleted");
+    });
+  };
 
   const grouped: Record<string, Expense[]> = {};
   for (const e of expenses) {
@@ -77,7 +89,7 @@ export function ExpenseList({ expenses, symbol }: { expenses: Expense[]; symbol:
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button disabled={pending}
-                        onClick={() => startTransition(() => deleteExpense(exp.id))}
+                        onClick={() => setDeletingId(exp.id)}
                         className="p-1.5 rounded-[8px] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-muted-foreground hover:text-red-500">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -89,6 +101,13 @@ export function ExpenseList({ expenses, symbol }: { expenses: Expense[]; symbol:
           </div>
         ))}
       </div>
+      <ConfirmDialog
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={executeDelete}
+        title="Delete Expense"
+        description="Are you sure you want to delete this expense? This action cannot be undone."
+      />
     </>
   );
 }

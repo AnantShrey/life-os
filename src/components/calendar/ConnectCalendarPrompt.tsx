@@ -4,6 +4,8 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { Calendar } from "lucide-react";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 export function ConnectCalendarPrompt() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,15 +26,15 @@ export function ConnectCalendarPrompt() {
         if (res.ok) {
           router.refresh();
         } else {
-          alert('Failed to connect Google Calendar.');
+          toast.error('Failed to connect Google Calendar.');
           setIsLoading(false);
         }
       } catch (error) {
-        console.error(error);
+        logger.error(error);
         setIsLoading(false);
       }
     },
-    onError: errorResponse => console.error(errorResponse),
+    onError: errorResponse => logger.error(errorResponse),
   });
 
   return (

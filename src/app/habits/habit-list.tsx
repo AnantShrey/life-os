@@ -1,9 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition, useOptimistic } from "react";
 import { toggleHabitLog, deleteHabit } from "./actions";
 import { Check, Trash2, CalendarCheck } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const WEEK_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
@@ -56,13 +58,35 @@ export function HabitList({
 }) {
   const todayDateStr = format(new Date(), "yyyy-MM-dd");
 
+  const [optimisticHabits, addOptimisticHabit] = useOptimistic(
+    habits,
+    (state, action: { type: 'delete', id: string }) => {
+      if (action.type === 'delete') return state.filter(h => h.id !== action.id);
+      return state;
+    }
+  );
+
+  const [optimisticLogs, addOptimisticLog] = useOptimistic(
+    todayLogs,
+    (state, action: { type: 'toggle', habit_id: string, date: string, completed: boolean }) => {
+      if (action.type === 'toggle') {
+        if (action.completed) {
+          return [...state, { habit_id: action.habit_id, log_date: action.date, completed: true }];
+        } else {
+          return state.filter(l => !(l.habit_id === action.habit_id && l.log_date === action.date));
+        }
+      }
+      return state;
+    }
+  );
+
   return (
     <div className="flex flex-col gap-4 mt-6">
-      {habits.length === 0 ? (
+      {optimisticHabits.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No habits found. Create one above!</p>
       ) : (
-        habits.map((habit) => {
-          const isCompletedToday = todayLogs.some(log => log.habit_id === habit.id && log.completed);
+        optimisticHabits.map((habit) => {
+          const isCompletedToday = optimisticLogs.some(log => log.habit_id === habit.id && log.completed);
           
           return (
             <HabitItem 
@@ -71,6 +95,8 @@ export function HabitList({
               isCompletedToday={isCompletedToday} 
               todayDateStr={todayDateStr}
               isSynced={syncedHabitIds.has(habit.id)}
+              addOptimisticHabit={addOptimisticHabit}
+              addOptimisticLog={addOptimisticLog}
             />
           );
         })
@@ -83,42 +109,56 @@ function HabitItem({
   habit, 
   isCompletedToday, 
   todayDateStr,
-  isSynced
+  isSynced,
+  addOptimisticHabit,
+  addOptimisticLog
 }: { 
   habit: Habit; 
   isCompletedToday: boolean;
   todayDateStr: string;
   isSynced: boolean;
+  addOptimisticHabit: (action: { type: 'delete', id: string }) => void;
+  addOptimisticLog: (action: { type: 'toggle', habit_id: string, date: string, completed: boolean }) => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleToggle = () => {
-    startTransition(() => {
-      toggleHabitLog(habit.id, todayDateStr, isCompletedToday);
+    startTransition(async () => {
+      addOptimisticLog({ type: 'toggle', habit_id: habit.id, date: todayDateStr, completed: !isCompletedToday });
+      const res = await toggleHabitLog(habit.id, todayDateStr, isCompletedToday);
+      if (res && !res.success) toast.error(res.error || "Failed to update habit log");
     });
   };
 
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this habit and all its history?")) {
-      startTransition(() => {
-        deleteHabit(habit.id);
-      });
-    }
+  const executeDelete = () => {
+    startTransition(async () => {
+      addOptimisticHabit({ type: 'delete', id: habit.id });
+      const res = await deleteHabit(habit.id);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to delete habit");
+      } else {
+        toast.success("Habit deleted");
+      }
+    });
   };
 
   const handleSyncToggle = () => {
     startTransition(async () => {
       if (isSynced) {
         const res = await unsyncHabitFromCalendar(habit.id);
-        if (res && !res.success) alert(`Unsync failed: ${res.error}`);
+        if (res && !res.success) toast.error(`Unsync failed: ${res.error}`);
+        else if (res && res.success) toast.success("Removed from Calendar");
       } else {
         const res = await syncHabitToCalendar(habit.id);
         if (res && !res.success) {
           if (res.error === "Calendar not connected") {
-            alert("Please connect your Google Calendar in the Calendar tab first.");
+            toast.error("Please connect your Google Calendar in the Calendar tab first.");
           } else {
-            alert(`Sync failed: ${res.error}`);
+            toast.error(`Sync failed: ${res.error}`);
           }
+        } else if (res && res.success) {
+          toast.success("Synced to Calendar");
         }
       }
     });
@@ -174,7 +214,7 @@ function HabitItem({
         </button>
 
         <button 
-          onClick={handleDelete}
+          onClick={() => setShowDeleteConfirm(true)}
           disabled={isPending}
           className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
           title="Delete habit"
@@ -182,6 +222,14 @@ function HabitItem({
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Habit"
+        description="Are you sure you want to delete this habit and all its history? This action cannot be undone."
+      />
     </div>
   );
 }

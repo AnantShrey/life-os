@@ -3,6 +3,7 @@ import { getOAuth2Client } from "@/lib/google-calendar";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { google } from "googleapis";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   try {
@@ -55,8 +56,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Calendar Auth Error:", error);
+  } catch (e) { const error = e as Error;
+    logger.error("Calendar Auth Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

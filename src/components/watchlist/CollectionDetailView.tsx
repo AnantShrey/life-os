@@ -23,6 +23,8 @@ import { Pencil, Trash2, GripVertical, X, ArrowLeft, Library } from "lucide-reac
 import { updateCollectionPositions, toggleWatchlistCollection, deleteCollection } from "@/app/watchlist/actions";
 import { WatchlistCard } from "@/components/watchlist/WatchlistCard";
 import { CreateCollectionModal } from "@/components/watchlist/CreateCollectionModal";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 function SortableWatchlistCard({ id, item, collectionId }: { id: string, item: any, collectionId: string }) {
   const [pending, startTransition] = useTransition();
@@ -44,8 +46,10 @@ function SortableWatchlistCard({ id, item, collectionId }: { id: string, item: a
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
-    startTransition(() => {
-      toggleWatchlistCollection(item.id, collectionId, false);
+    startTransition(async () => {
+      const res = await toggleWatchlistCollection(item.id, collectionId, false);
+      if (res && !res.success) toast.error(res.error || "Failed to remove item");
+      else toast.success("Removed from collection");
     });
   };
 
@@ -83,6 +87,7 @@ export function CollectionDetailView({
 }) {
   const router = useRouter();
   const [showEdit, setShowEdit] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const initialItems = useMemo(() => {
@@ -123,13 +128,16 @@ export function CollectionDetailView({
     }
   };
 
-  const handleDelete = () => {
-    if (confirm(`Are you sure you want to delete the collection '${collection.name}'?`)) {
-      startTransition(async () => {
-        await deleteCollection(collection.id);
+  const executeDelete = () => {
+    startTransition(async () => {
+      const res = await deleteCollection(collection.id);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to delete collection");
+      } else {
+        toast.success("Collection deleted");
         router.push("/watchlist?tab=collections");
-      });
-    }
+      }
+    });
   };
 
   return (
@@ -181,7 +189,7 @@ export function CollectionDetailView({
                 <Pencil className="w-4 h-4" />
               </button>
               <button 
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={pending}
                 className="w-10 h-10 bg-background/50 backdrop-blur-md flex items-center justify-center rounded-full hover:bg-red-500 hover:text-white transition-colors shadow-sm"
               >
@@ -238,6 +246,14 @@ export function CollectionDetailView({
           onClose={() => setShowEdit(false)}
         />
       )}
+      
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Delete Collection"
+        description={`Are you sure you want to delete the collection '${collection.name}'?`}
+      />
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { Trash2, Pencil, ChevronDown } from "lucide-react";
 import { updateWatchlistItem, deleteWatchlistItem } from "@/app/watchlist/actions";
 import { CollectionBadge } from "./CollectionBadge";
 import { AddToCollectionPopup, MinimalCollection } from "./AddToCollectionPopup";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type Item = {
   id: string; title: string; type: "movie"|"tv"; status: "want"|"watching"|"watched";
@@ -33,15 +35,30 @@ export function WatchlistCard({
   const [season, setSeason] = useState(item.current_season || 1);
   const [episode, setEpisode] = useState(item.current_episode || 1);
   const [editProgress, setEditProgress] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const updateStatus = (s: "want"|"watching"|"watched") => {
     setStatus(s);
-    startTransition(() => updateWatchlistItem(item.id, { status: s }));
+    startTransition(async () => {
+      const res = await updateWatchlistItem(item.id, { status: s });
+      if (res && !res.success) toast.error(res.error || "Failed to update status");
+    });
   };
 
   const saveProgress = () => {
-    startTransition(() => updateWatchlistItem(item.id, { current_season: season, current_episode: episode }));
+    startTransition(async () => {
+      const res = await updateWatchlistItem(item.id, { current_season: season, current_episode: episode });
+      if (res && !res.success) toast.error(res.error || "Failed to save progress");
+    });
     setEditProgress(false);
+  };
+
+  const executeDelete = () => {
+    startTransition(async () => {
+      const res = await deleteWatchlistItem(item.id);
+      if (res && !res.success) toast.error(res.error || "Failed to delete item");
+      else toast.success("Removed from watchlist");
+    });
   };
 
   return (
@@ -120,11 +137,18 @@ export function WatchlistCard({
           />
         )}
         <button disabled={pending}
-          onClick={() => { if (confirm("Remove from watchlist?")) startTransition(()=>deleteWatchlistItem(item.id)); }}
+          onClick={() => setShowDeleteConfirm(true)}
           className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-[8px] transition-all">
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Remove from Watchlist"
+        description="Are you sure you want to remove this title from your watchlist?"
+      />
     </div>
   );
 }

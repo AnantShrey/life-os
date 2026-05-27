@@ -2,11 +2,12 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { logger } from "@/lib/logger";
 
 export async function searchGoogleBooks(query: string) {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
   if (!apiKey) {
-    console.error("Missing Google Books API Key");
+    logger.error("Missing Google Books API Key");
     return [];
   }
 
@@ -29,18 +30,23 @@ export async function addBook(bookData: any) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("books").insert({
-    user_id: user.id,
-    title: bookData.title,
-    author: bookData.author,
-    cover_url: bookData.cover_url,
-    page_count: bookData.page_count,
-    google_books_id: bookData.google_books_id,
-    description: bookData.description,
-    status: "want",
-  });
-
-  revalidatePath("/books");
+  try {
+    await supabase.from("books").insert({
+      user_id: user.id,
+      title: bookData.title,
+      author: bookData.author,
+      cover_url: bookData.cover_url,
+      page_count: bookData.page_count,
+      google_books_id: bookData.google_books_id,
+      description: bookData.description,
+      status: "want",
+    });
+    revalidatePath("/books");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Add book error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function updateBookStatus(id: string, status: string) {
@@ -48,7 +54,7 @@ export async function updateBookStatus(id: string, status: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const updates: any = { status };
+  const updates: Record<string, any> = { status };
   
   if (status === "reading") {
     const { data: book } = await supabase.from("books").select("started_reading_at").eq("id", id).single();
@@ -66,9 +72,15 @@ export async function updateBookStatus(id: string, status: string) {
     }
   }
 
-  await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/books");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/books");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Update book status error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function addBookPages(id: string, pagesToAdd: number) {
@@ -80,7 +92,7 @@ export async function addBookPages(id: string, pagesToAdd: number) {
   if (!book) return;
 
   const newPage = Math.min((book.current_page || 0) + pagesToAdd, book.page_count || 99999);
-  const updates: any = { current_page: newPage };
+  const updates: Record<string, any> = { current_page: newPage };
   
   if (book.page_count && newPage >= book.page_count) {
     updates.status = "finished";
@@ -92,9 +104,15 @@ export async function addBookPages(id: string, pagesToAdd: number) {
     }
   }
 
-  await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/books");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/books");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Add book pages error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function toggleBookPause(id: string, isPaused: boolean) {
@@ -105,7 +123,7 @@ export async function toggleBookPause(id: string, isPaused: boolean) {
   const { data: book } = await supabase.from("books").select("*").eq("id", id).single();
   if (!book) return;
 
-  const updates: any = { is_paused: isPaused };
+  const updates: Record<string, any> = { is_paused: isPaused };
 
   if (isPaused) {
     if (book.last_resumed_at) {
@@ -116,9 +134,15 @@ export async function toggleBookPause(id: string, isPaused: boolean) {
     updates.last_resumed_at = new Date().toISOString();
   }
 
-  await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/books");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/books");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Toggle book pause error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function updateBookRating(id: string, rating: number) {
@@ -126,8 +150,14 @@ export async function updateBookRating(id: string, rating: number) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("books").update({ rating }).eq("id", id).eq("user_id", user.id);
-  revalidatePath("/books");
+  try {
+    await supabase.from("books").update({ rating }).eq("id", id).eq("user_id", user.id);
+    revalidatePath("/books");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Update book rating error:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 export async function deleteBook(id: string) {
@@ -135,7 +165,13 @@ export async function deleteBook(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("books").delete().eq("id", id).eq("user_id", user.id);
-  revalidatePath("/books");
-  revalidatePath("/dashboard");
+  try {
+    await supabase.from("books").delete().eq("id", id).eq("user_id", user.id);
+    revalidatePath("/books");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) { const error = e as Error;
+    logger.error("Delete book error:", error);
+    return { success: false, error: error.message };
+  }
 }
