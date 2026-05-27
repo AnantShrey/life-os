@@ -54,7 +54,7 @@ export default async function SignupPage({
           </button>
 
           {params?.message && (
-            <div className="p-3 mt-4 text-sm text-center text-red-600 bg-red-100 rounded-lg dark:bg-red-900/30 dark:text-red-400">
+            <div className={`${params.message.includes("Check your email") ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400" : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400"} border text-sm rounded-[12px] px-4 py-3 mt-4 text-center`}>
               {params.message}
             </div>
           )}

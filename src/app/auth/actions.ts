@@ -16,7 +16,8 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    return redirect("/login?message=Could not authenticate user");
+    console.error("Login error:", error.message);
+    return redirect("/login?message=" + encodeURIComponent("Invalid email or password"));
   }
 
   revalidatePath("/", "layout");
@@ -29,17 +30,21 @@ export async function signup(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
   });
 
   if (error) {
-    return redirect("/signup?message=" + error.message);
+    console.error("Signup error:", error.message);
+    return redirect("/signup?message=" + encodeURIComponent("Could not create account. Please try again."));
   }
 
-  revalidatePath("/", "layout");
-  redirect("/dashboard");
+  if (data?.user?.identities?.length === 0) {
+    return redirect("/signup?message=" + encodeURIComponent("Email already in use"));
+  }
+
+  return redirect("/signup?message=" + encodeURIComponent("Check your email to confirm your account"));
 }
 
 export async function logout() {

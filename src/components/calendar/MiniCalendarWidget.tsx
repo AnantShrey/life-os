@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { getCalendarClient } from "@/lib/google-calendar";
+import { MiniCalendarEventsClient } from "./MiniCalendarEventsClient";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
@@ -32,30 +32,10 @@ export async function MiniCalendarWidget() {
     );
   }
 
-  let events: any[] = [];
-  const today = new Date();
-  
-  try {
-    const calendar = await getCalendarClient();
-    const todayStart = new Date(today);
-    todayStart.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(todayStart);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const response = await calendar.events.list({
-      calendarId: 'primary',
-      timeMin: todayStart.toISOString(),
-      timeMax: tomorrow.toISOString(),
-      maxResults: 5,
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
-
-    events = response.data.items || [];
-  } catch (e) {
-    console.error("Mini Calendar Error:", e);
-    // Ignore error for widget, handle gracefully below
-  }
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(todayStart);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
   const weekStart = startOfWeek(today);
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
@@ -76,7 +56,6 @@ export async function MiniCalendarWidget() {
       <div className="flex justify-between items-center mb-5 pb-5 border-b border-border/50">
         {weekDays.map((date, i) => {
           const isToday = isSameDay(date, today);
-          const hasEventsToday = isToday && events.length > 0;
           
           return (
             <div key={i} className="flex flex-col items-center gap-1.5">
@@ -90,49 +69,16 @@ export async function MiniCalendarWidget() {
               >
                 {format(date, "d")}
               </div>
-              {/* Event dot indicator */}
-              <div className={`w-1 h-1 rounded-full ${hasEventsToday ? 'bg-primary' : 'bg-transparent'}`} />
+              {/* Removed dot indicator for SSR, events loaded on client */}
             </div>
           );
         })}
       </div>
       
-      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
-        {events.length === 0 ? (
-          <div className="text-sm text-muted-foreground italic h-full flex items-center justify-center">
-            No events scheduled for today.
-          </div>
-        ) : (
-          events.map((event, i) => {
-            const isAllDay = !!event.start.date;
-            const startTime = isAllDay ? "All day" : format(new Date(event.start.dateTime), "h:mm a");
-            
-            // Map Google color IDs or use default primary if missing
-            // 9 is Blueberry (default blue), just use primary for fallback
-            const eventColor = event.colorId ? '#0ea5e9' : 'var(--primary)';
-
-            return (
-              <div key={event.id || i} className="group">
-                <div className="flex items-center gap-3 p-2 rounded-[8px] transition-colors hover:bg-muted">
-                  <div 
-                    className="w-2 h-2 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: eventColor }} 
-                  />
-                  <p className="font-medium text-sm line-clamp-1 flex-1 text-foreground" title={event.summary}>
-                    {event.summary}
-                  </p>
-                  <p className="text-[12px] text-muted-foreground text-right whitespace-nowrap ml-2">
-                    {startTime}
-                  </p>
-                </div>
-                {i < events.length - 1 && (
-                  <div className="h-[0.5px] bg-border/40 mx-2 my-0.5 group-hover:bg-transparent transition-colors" />
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
+      <MiniCalendarEventsClient 
+        timeMin={todayStart.toISOString()} 
+        timeMax={tomorrow.toISOString()} 
+      />
     </div>
   );
 }
