@@ -27,7 +27,9 @@ function TaskRow({ task }: { task: Task }) {
   const handleToggle = () => {
     const next = !done;
     setDone(next);
-    startTransition(() => toggleTask(task.id, next));
+    startTransition(async () => {
+      await toggleTask(task.id, next);
+    });
   };
 
   return (

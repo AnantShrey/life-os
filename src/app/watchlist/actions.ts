@@ -51,6 +51,7 @@ export async function addToWatchlist(item: any) {
 export async function updateWatchlistItem(id: string, data: Record<string, any>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("watchlist").update(data).eq("id", id).eq("user_id", user.id);
     revalidatePath("/watchlist");
@@ -65,6 +66,7 @@ export async function updateWatchlistItem(id: string, data: Record<string, any>)
 export async function deleteWatchlistItem(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("watchlist").delete().eq("id", id).eq("user_id", user.id);
     revalidatePath("/watchlist");

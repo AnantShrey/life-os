@@ -142,6 +142,8 @@ export default async function DashboardPage() {
     </p>
   );
 
+  const displayName = prefsRes.data?.display_name || user.email?.split("@")[0] || "User";
+
   return (
     <AppLayout title="Dashboard">
       <style>{`
@@ -171,6 +173,7 @@ export default async function DashboardPage() {
             calorieGoal={nutritionGoals.calories}
             expensesTotal={expenses.reduce((s, e) => s + Number(e.amount), 0)}
             symbol={prefs.currency_symbol}
+            userName={displayName}
           />
         </section>
 

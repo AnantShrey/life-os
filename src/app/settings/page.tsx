@@ -2,10 +2,17 @@ import { createClient } from "@/utils/supabase/server";
 import { AppLayout } from "@/components/layout/app-layout";
 import { CurrencySelector } from "@/components/settings/CurrencySelector";
 import { DataExportButton } from "@/components/settings/DataExportButton";
-import { getPreferences } from "./actions";
+import { getPreferences, updateDisplayName } from "./actions";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const prefs = await getPreferences();
+  const resolvedSearchParams = await searchParams;
+  const error = resolvedSearchParams.error as string;
+  const success = resolvedSearchParams.success as string;
 
   return (
     <AppLayout title="Settings">
@@ -21,16 +28,57 @@ export default async function SettingsPage() {
             Preferences
           </p>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-sm">Currency</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Used for all money amounts in the app
-              </p>
+          <div className="flex flex-col gap-6">
+            <form action={updateDisplayName} className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Display Name</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  How we greet you on the dashboard
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={prefs?.display_name || ""}
+                  placeholder="Your Name"
+                  className="px-3 py-1.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm w-40"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+
+            <div className="h-px bg-border w-full" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Currency</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Used for all money amounts in the app
+                </p>
+              </div>
+              <CurrencySelector current={prefs.currency ?? "INR"} />
             </div>
-            <CurrencySelector current={prefs.currency ?? "INR"} />
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-[12px] px-4 py-3 mt-6">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm rounded-[12px] px-4 py-3 mt-6">
+            {success}
+          </div>
+        )}
 
         <div
           className="bg-card rounded-[20px] p-6 mt-6"

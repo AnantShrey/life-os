@@ -10,6 +10,7 @@ export async function addExpense(data: {
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").insert({ ...data, user_id: user.id });
     revalidatePath("/expenses");
@@ -28,6 +29,7 @@ export async function updateExpense(id: string, data: Partial<{
 }>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").update(data).eq("id", id).eq("user_id", user.id);
     revalidatePath("/expenses");
@@ -42,6 +44,7 @@ export async function updateExpense(id: string, data: Partial<{
 export async function deleteExpense(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").delete().eq("id", id).eq("user_id", user.id);
     revalidatePath("/expenses");
@@ -56,6 +59,7 @@ export async function deleteExpense(id: string) {
 export async function upsertBudget(category: string, amount: number, month: number, year: number) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("budgets").upsert({ user_id: user.id, category, amount, month, year }, { onConflict: "user_id,category,month,year" });
     revalidatePath("/expenses");
@@ -70,6 +74,7 @@ export async function upsertBudget(category: string, amount: number, month: numb
 export async function deleteBudget(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("budgets").delete().eq("id", id).eq("user_id", user.id);
     revalidatePath("/expenses");

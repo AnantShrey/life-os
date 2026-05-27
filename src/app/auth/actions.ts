@@ -28,6 +28,7 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient();
 
+  const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -43,6 +44,13 @@ export async function signup(formData: FormData) {
 
   if (data?.user?.identities?.length === 0) {
     return redirect("/signup?message=" + encodeURIComponent("Email already in use"));
+  }
+
+  if (data?.user && name) {
+    await supabase.from("user_preferences").upsert({
+      user_id: data.user.id,
+      display_name: name,
+    }, { onConflict: "user_id" });
   }
 
   return redirect("/signup?message=" + encodeURIComponent("Check your email to confirm your account"));

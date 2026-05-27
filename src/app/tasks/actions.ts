@@ -2,6 +2,8 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { logger } from "@/lib/logger";
 
 export async function addTask(formData: FormData) {
   const supabase = await createClient();
@@ -21,12 +23,14 @@ export async function addTask(formData: FormData) {
       due_date: dueDate ? dueDate : null,
       priority,
     });
-    revalidatePath("/tasks");
-    return { success: true };
-  } catch (e) { const error = e as Error;
+  } catch (e) {
+    const error = e as Error;
     logger.error("Add task error:", error);
-    return { success: false, error: error.message };
+    redirect("/tasks?error=" + encodeURIComponent(error.message));
   }
+
+  revalidatePath("/tasks");
+  redirect("/tasks");
 }
 
 export async function toggleTask(id: string, completed: boolean) {
@@ -68,7 +72,6 @@ export async function deleteTask(id: string) {
 }
 
 import { getCalendarClient } from "@/lib/google-calendar";
-import { logger } from "@/lib/logger";
 
 export async function syncTaskToCalendar(taskId: string) {
   const supabase = await createClient();

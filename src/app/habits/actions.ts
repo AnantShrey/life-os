@@ -2,6 +2,8 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { logger } from "@/lib/logger";
 
 export async function addHabit(formData: FormData) {
   const supabase = await createClient();
@@ -19,12 +21,14 @@ export async function addHabit(formData: FormData) {
       name,
       description: description ? description : null,
     });
-    revalidatePath("/habits");
-    return { success: true };
-  } catch (e) { const error = e as Error;
+  } catch (e) {
+    const error = e as Error;
     logger.error("Add habit error:", error);
-    return { success: false, error: error.message };
+    redirect("/habits?error=" + encodeURIComponent(error.message));
   }
+
+  revalidatePath("/habits");
+  redirect("/habits");
 }
 
 export async function addHabitWithFrequency(formData: FormData) {
@@ -54,12 +58,14 @@ export async function addHabitWithFrequency(formData: FormData) {
       frequency_days,
       end_date: end_date || null,
     });
-    revalidatePath("/habits");
-    return { success: true };
-  } catch (e) { const error = e as Error;
+  } catch (e) {
+    const error = e as Error;
     logger.error("Add habit error:", error);
-    return { success: false, error: error.message };
+    redirect("/habits?error=" + encodeURIComponent(error.message));
   }
+
+  revalidatePath("/habits");
+  redirect("/habits");
 }
 
 export async function toggleHabitLog(habitId: string, logDate: string, currentlyCompleted: boolean) {
@@ -103,7 +109,6 @@ export async function deleteHabit(id: string) {
 }
 
 import { getCalendarClient } from "@/lib/google-calendar";
-import { logger } from "@/lib/logger";
 
 export async function syncHabitToCalendar(habitId: string) {
   const supabase = await createClient();

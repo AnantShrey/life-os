@@ -32,6 +32,7 @@ export async function MiniCalendarWidget() {
     );
   }
 
+  const today = new Date();
   const todayStart = new Date(today);
   todayStart.setHours(0, 0, 0, 0);
   const tomorrow = new Date(todayStart);

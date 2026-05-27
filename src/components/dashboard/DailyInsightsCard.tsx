@@ -9,7 +9,8 @@ export function DailyInsightsCard({
   calories, 
   calorieGoal,
   expensesTotal,
-  symbol
+  symbol,
+  userName
 }: {
   tasksDue: number;
   tasksTotal: number;
@@ -19,6 +20,7 @@ export function DailyInsightsCard({
   calorieGoal: number;
   expensesTotal: number;
   symbol: string;
+  userName: string;
 }) {
   const insights = [];
 
@@ -63,7 +65,7 @@ export function DailyInsightsCard({
           <Lightbulb className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold mb-1">Good {format(new Date(), 'a') === 'AM' ? 'Morning' : 'Evening'}, Anant</h2>
+          <h2 className="text-lg font-semibold mb-1">Good {format(new Date(), 'a') === 'AM' ? 'Morning' : 'Evening'}, {userName}</h2>
           <p className="text-sm text-muted-foreground mb-4">Here's a quick summary of your day:</p>
           
           <ul className="space-y-2">
