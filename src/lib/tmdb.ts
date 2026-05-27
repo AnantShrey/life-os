@@ -8,38 +8,30 @@ function getHeaders() {
 
 export async function searchTMDB(query: string, signal?: AbortSignal) {
   if (!query.trim() || query.length < 2) return [];
-  const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  const url = `${TMDB_BASE}/search/multi?query=${encodeURIComponent(query)}&api_key=${key}&include_adult=false&language=en-US&page=1`;
   
   try {
-    const res = await fetch(url, { headers: getHeaders(), signal }); // pass signal here
+    const res = await fetch(`/api/tmdb/search?query=${encodeURIComponent(query)}`, { signal });
     if (!res.ok) {
-      console.error("TMDB search failed:", res.status, res.statusText);
       throw new Error("Search failed");
     }
     const data = await res.json();
-    return (data.results || []).filter((r: any) =>
-      (r.media_type === "movie" || r.media_type === "tv") && (r.poster_path || r.title || r.name)
-    );
+    return data.results || [];
   } catch (err) {
-    console.error("TMDB search error:", err);
+    if (err instanceof Error && err.name === 'AbortError') throw err;
+    console.error("TMDB search proxy error:", err);
     throw err;
   }
 }
 
 export async function getTMDBDetails(id: number, type: "movie" | "tv") {
-  const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  const url = `${TMDB_BASE}/${type}/${id}?language=en-US&api_key=${key}`;
-  
   try {
-    const res = await fetch(url, { headers: getHeaders() });
+    const res = await fetch(`/api/tmdb/details?id=${id}&type=${type}`);
     if (!res.ok) {
-      console.error("TMDB details failed:", res.status, res.statusText);
       return null;
     }
-    return res.json();
+    return await res.json();
   } catch (err) {
-    console.error("TMDB details error:", err);
+    console.error("TMDB details proxy error:", err);
     return null;
   }
 }

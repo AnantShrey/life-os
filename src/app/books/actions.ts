@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function searchGoogleBooks(query: string) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY;
+  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
   if (!apiKey) {
     console.error("Missing Google Books API Key");
     return [];
