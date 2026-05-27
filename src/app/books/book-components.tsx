@@ -15,7 +15,7 @@ export function BookSearch() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    
+
     setIsSearching(true);
     const data = await searchGoogleBooks(query);
     setResults(data);
@@ -48,7 +48,7 @@ export function BookSearch() {
             className="w-full bg-background pl-10 pr-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
-        <button 
+        <button
           type="submit"
           disabled={isSearching}
           className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
@@ -166,7 +166,7 @@ export function BookCard({ book }: { book: any }) {
     // Convert to days, minimum 1 day if started today
     const daysSinceStarted = Math.max(1, Math.ceil(totalMs / (1000 * 60 * 60 * 24)));
     const pagesPerDay = book.current_page ? (book.current_page / daysSinceStarted).toFixed(1) : 0;
-    
+
     let estimatedDaysLeft = null;
     if (book.page_count && book.current_page && Number(pagesPerDay) > 0) {
       estimatedDaysLeft = Math.ceil((book.page_count - book.current_page) / Number(pagesPerDay));
@@ -188,28 +188,27 @@ export function BookCard({ book }: { book: any }) {
             <Book className="w-10 h-10 text-muted-foreground" />
           </div>
         )}
-        
+
         {book.status === "reading" && (
           <button
             onClick={handleTogglePause}
             disabled={isPending}
             title={book.is_paused ? "Resume reading time" : "Pause reading time"}
-            className={`absolute -bottom-3 -right-3 p-2 rounded-full shadow-lg border ${
-              book.is_paused ? "bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/50 dark:border-amber-800 dark:text-amber-400" : "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-400"
-            } transition-transform hover:scale-110 focus:outline-none`}
+            className={`absolute -bottom-3 -right-3 p-2 rounded-full shadow-lg border ${book.is_paused ? "bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/50 dark:border-amber-800 dark:text-amber-400" : "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-800 dark:text-green-400"
+              } transition-transform hover:scale-110 focus:outline-none`}
           >
             {book.is_paused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
           </button>
         )}
       </div>
-      
+
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex justify-between items-start gap-2">
           <div>
             <h4 className="font-bold text-xl line-clamp-1" title={book.title}>{book.title}</h4>
             <p className="text-muted-foreground">{book.author}</p>
           </div>
-          <button 
+          <button
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isPending}
             className="opacity-0 group-hover:opacity-100 p-2 text-muted-foreground hover:text-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
@@ -227,8 +226,8 @@ export function BookCard({ book }: { book: any }) {
 
         <div className="mt-auto pt-5 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <select 
-              value={book.status} 
+            <select
+              value={book.status}
               onChange={handleStatusChange}
               disabled={isPending}
               className="text-sm bg-muted px-3 py-1.5 rounded-lg border border-border focus:outline-none focus:ring-1 focus:ring-primary/50 font-medium"
@@ -237,12 +236,12 @@ export function BookCard({ book }: { book: any }) {
               <option value="reading">Currently Reading</option>
               <option value="finished">Finished</option>
             </select>
-            
+
             {book.status === "finished" && (
               <div className="flex gap-1 ml-auto">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button 
-                    key={star} 
+                  <button
+                    key={star}
                     onClick={() => handleRating(star)}
                     disabled={isPending}
                     className="focus:outline-none p-1 hover:scale-110 transition-transform"
@@ -264,16 +263,16 @@ export function BookCard({ book }: { book: any }) {
                     <span>{book.current_page || 0} / {book.page_count} pages ({Math.round(((book.current_page || 0) / book.page_count) * 100)}%)</span>
                   </div>
                   <div className="bg-muted rounded-full h-2.5 overflow-hidden border border-border/50">
-                    <div 
+                    <div
                       className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${Math.min(100, ((book.current_page || 0) / book.page_count) * 100)}%` }}
                     />
                   </div>
                 </div>
-                
+
                 <form onSubmit={handleAddPages} className="flex items-center gap-2 w-full sm:w-auto">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="1"
                     placeholder="+ Pages"
                     value={pagesToAdd}
@@ -281,8 +280,8 @@ export function BookCard({ book }: { book: any }) {
                     disabled={isPending}
                     className="w-24 px-3 py-1.5 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
                   />
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={!pagesToAdd || isPending}
                     className="bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
@@ -333,7 +332,6 @@ export function BookCard({ book }: { book: any }) {
           )}
         </div>
       </div>
-    </div>
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

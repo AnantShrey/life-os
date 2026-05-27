@@ -15,7 +15,7 @@ type Task = {
   completed: boolean;
 };
 
-};
+
 export function TaskList({ tasks, syncedTaskIds }: { tasks: Task[], syncedTaskIds: Set<string> }) {
   const [optimisticTasks, addOptimisticTask] = useOptimistic(
     tasks,
@@ -37,10 +37,10 @@ export function TaskList({ tasks, syncedTaskIds }: { tasks: Task[], syncedTaskId
         <p className="text-muted-foreground text-center py-8">No tasks found. Add one above!</p>
       ) : (
         optimisticTasks.map((task) => (
-          <TaskItem 
-            key={task.id} 
-            task={task} 
-            isSynced={syncedTaskIds.has(task.id)} 
+          <TaskItem
+            key={task.id}
+            task={task}
+            isSynced={syncedTaskIds.has(task.id)}
             addOptimisticTask={addOptimisticTask}
           />
         ))
@@ -49,14 +49,14 @@ export function TaskList({ tasks, syncedTaskIds }: { tasks: Task[], syncedTaskId
   );
 }
 
-function TaskItem({ 
-  task, 
-  isSynced, 
-  addOptimisticTask 
-}: { 
-  task: Task, 
+function TaskItem({
+  task,
+  isSynced,
+  addOptimisticTask
+}: {
+  task: Task,
   isSynced: boolean,
-  addOptimisticTask: (action: { type: 'toggle' | 'delete', id: string }) => void 
+  addOptimisticTask: (action: { type: 'toggle' | 'delete', id: string }) => void
 }) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -100,14 +100,13 @@ function TaskItem({
 
   return (
     <div className={`flex items-center gap-4 p-4 rounded-xl border border-border bg-card transition-all ${task.completed ? "opacity-60" : ""}`}>
-      <button 
+      <button
         onClick={handleToggle}
         disabled={isPending}
-        className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
-          task.completed 
-            ? "bg-primary border-primary text-primary-foreground" 
+        className={`w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${task.completed
+            ? "bg-primary border-primary text-primary-foreground"
             : "border-muted-foreground hover:border-primary"
-        }`}
+          }`}
       >
         {task.completed && <Check className="w-4 h-4" />}
       </button>
@@ -116,7 +115,7 @@ function TaskItem({
         <h4 className={`font-medium truncate ${task.completed ? "line-through text-muted-foreground" : ""}`}>
           {task.title}
         </h4>
-        
+
         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
           {task.due_date && (
             <span className={`flex items-center gap-1 ${isOverdue && !task.completed ? "text-red-500 font-medium" : ""}`}>
@@ -132,19 +131,18 @@ function TaskItem({
       </div>
 
       <div className="flex items-center gap-1">
-        <button 
+        <button
           onClick={handleSync}
           disabled={isPending || isSynced}
           title={isSynced ? "Synced to Calendar" : "Push to Google Calendar"}
-          className={`p-2 rounded-lg transition-colors ${
-            isSynced 
-              ? "text-green-500 bg-green-50 dark:bg-green-950/30 cursor-default" 
+          className={`p-2 rounded-lg transition-colors ${isSynced
+              ? "text-green-500 bg-green-50 dark:bg-green-950/30 cursor-default"
               : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-          }`}
+            }`}
         >
           {isSynced ? <Check className="w-4 h-4" /> : <Calendar className="w-4 h-4" />}
         </button>
-        <button 
+        <button
           onClick={() => setShowDeleteConfirm(true)}
           disabled={isPending}
           className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
