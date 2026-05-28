@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { logger } from "@/lib/logger";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function addTask(formData: FormData) {
   const supabase = await createClient();
@@ -47,6 +48,9 @@ export async function toggleTask(id: string, completed: boolean) {
 
   try {
     await supabase.from("tasks").update(updates).eq("id", id).eq("user_id", user.id);
+    if (completed) {
+      await syncGoalsProgress(user.id);
+    }
     revalidatePath("/tasks");
     revalidatePath("/dashboard");
     return { success: true };

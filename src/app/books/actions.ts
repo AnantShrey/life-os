@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function searchGoogleBooks(query: string) {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
@@ -74,6 +75,9 @@ export async function updateBookStatus(id: string, status: string) {
 
   try {
     await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
+    if (status === "finished") {
+      await syncGoalsProgress(user.id);
+    }
     revalidatePath("/books");
     revalidatePath("/dashboard");
     return { success: true };
@@ -106,6 +110,9 @@ export async function addBookPages(id: string, pagesToAdd: number) {
 
   try {
     await supabase.from("books").update(updates).eq("id", id).eq("user_id", user.id);
+    if (updates.status === "finished") {
+      await syncGoalsProgress(user.id);
+    }
     revalidatePath("/books");
     revalidatePath("/dashboard");
     return { success: true };

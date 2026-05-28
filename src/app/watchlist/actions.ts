@@ -2,6 +2,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function addToWatchlist(item: any) {
   const supabase = await createClient();
@@ -43,6 +44,10 @@ export async function addToWatchlist(item: any) {
     return { success: false, error: error.message };
   }
 
+  if (item.status === "watched") {
+    await syncGoalsProgress(user.id);
+  }
+
   revalidatePath("/watchlist");
   revalidatePath("/dashboard");
   return { success: true, data };
@@ -54,6 +59,9 @@ export async function updateWatchlistItem(id: string, data: Record<string, any>)
   if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("watchlist").update(data).eq("id", id).eq("user_id", user.id);
+    if (data.status === "watched") {
+      await syncGoalsProgress(user.id);
+    }
     revalidatePath("/watchlist");
     revalidatePath("/dashboard");
     return { success: true };

@@ -50,7 +50,8 @@ export async function syncGoalsProgress(userId: string) {
         if (goal.linked_metric === "habits_streak") {
           // Simplification for server sync: query all habits and logs, calculate max streak
           const { data: habits } = await supabase.from("habits").select("id").eq("user_id", userId);
-          const { data: logs } = await supabase.from("habit_logs").select("habit_id, log_date").eq("completed", true);
+          const habitIds = (habits || []).map(h => h.id);
+          const { data: logs } = await supabase.from("habit_logs").select("habit_id, log_date").in("habit_id", habitIds).eq("completed", true);
           if (habits && logs) {
             let maxStreak = 0;
             const todayStr = format(now, "yyyy-MM-dd");
@@ -75,7 +76,9 @@ export async function syncGoalsProgress(userId: string) {
             newValue = maxStreak;
           }
         } else if (goal.linked_metric === "perfect_days") {
-          let query = supabase.from("habit_logs").select("log_date").eq("completed", true);
+          const { data: habitsForPerfect } = await supabase.from("habits").select("id").eq("user_id", userId);
+          const habitIdsForPerfect = (habitsForPerfect || []).map(h => h.id);
+          let query = supabase.from("habit_logs").select("log_date").in("habit_id", habitIdsForPerfect).eq("completed", true);
           const { data: logs } = await query;
           const { count: totalHabits } = await supabase.from("habits").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("archived", false);
           if (logs && totalHabits) {

@@ -2,6 +2,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function addExpense(data: {
   amount: number; category: string; description: string;
@@ -13,6 +14,7 @@ export async function addExpense(data: {
   if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").insert({ ...data, user_id: user.id });
+    await syncGoalsProgress(user.id);
     revalidatePath("/expenses");
     revalidatePath("/dashboard");
     return { success: true };
@@ -32,6 +34,7 @@ export async function updateExpense(id: string, data: Partial<{
   if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").update(data).eq("id", id).eq("user_id", user.id);
+    await syncGoalsProgress(user.id);
     revalidatePath("/expenses");
     revalidatePath("/dashboard");
     return { success: true };
@@ -47,6 +50,7 @@ export async function deleteExpense(id: string) {
   if (!user) return { success: false, error: "Not authenticated" };
   try {
     await supabase.from("expenses").delete().eq("id", id).eq("user_id", user.id);
+    await syncGoalsProgress(user.id);
     revalidatePath("/expenses");
     revalidatePath("/dashboard");
     return { success: true };

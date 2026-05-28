@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { logger } from "@/lib/logger";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function addHabit(formData: FormData) {
   const supabase = await createClient();
@@ -83,6 +84,7 @@ export async function toggleHabitLog(habitId: string, logDate: string, currently
         completed: true,
       });
     }
+    await syncGoalsProgress(user.id);
     revalidatePath("/habits");
     revalidatePath("/dashboard");
     return { success: true };

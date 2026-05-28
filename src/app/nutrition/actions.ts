@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { syncGoalsProgress } from "@/lib/goal-sync";
 
 export async function addNutritionLog(data: {
   log_date: string; food_name: string; calories: number;
@@ -13,6 +14,7 @@ export async function addNutritionLog(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("nutrition_logs").insert({ ...data, user_id: user.id });
+  await syncGoalsProgress(user.id);
   revalidatePath("/nutrition");
   revalidatePath("/dashboard");
 }
@@ -22,6 +24,7 @@ export async function deleteNutritionLog(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("nutrition_logs").delete().eq("id", id).eq("user_id", user.id);
+  await syncGoalsProgress(user.id);
   revalidatePath("/nutrition");
   revalidatePath("/dashboard");
 }
